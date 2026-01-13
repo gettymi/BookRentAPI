@@ -1,6 +1,6 @@
 from app.core.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String,INT
+from sqlalchemy import String
 
 class Book(Base):
     __tablename__ = "books"
