@@ -8,4 +8,6 @@ class Book(Base):
     title: Mapped[str] = mapped_column(String(50), index=True)
     author: Mapped[str] = mapped_column(String(50))
     year: Mapped[int] = mapped_column()
+    price: Mapped[float] = mapped_column()
+    description: Mapped[str | None] = mapped_column(String(1000))
     is_available: Mapped[bool] = mapped_column(default=True)
