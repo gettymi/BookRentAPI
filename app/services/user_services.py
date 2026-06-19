@@ -1,3 +1,12 @@
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.security import get_password_hash, verify_password
+from app.models import User
+from app.schemas.user import UserCreate, UserUpdate
+
+
 class UserService:
 
     @staticmethod
@@ -49,6 +58,17 @@ class UserService:
         await session.refresh(user)
 
         return user
-        
+    
+    @staticmethod
+    async def authenticate_user(session: AsyncSession, email: str, password: str):
+        query = select(User).where(User.email == email)
+        result = await session.execute(query)
+        user = result.scalar_one_or_none()
+
+        if not user or not verify_password(plain_password=password, hashed_password=user.hashed_password):
+            return None
+
+        return user
+
 
     
