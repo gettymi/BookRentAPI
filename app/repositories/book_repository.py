@@ -33,6 +33,5 @@ class BookRepository:
     async def delete(self, new_book: Book):
         await self.session.delete(new_book)
         await self.session.commit()
-        return new_book
      
     

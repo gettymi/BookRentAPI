@@ -10,14 +10,12 @@ from app.services.book_service import BookService
 router = APIRouter()
 
 
-@router.post("/", response_model=BookResponse)
+@router.post("/", response_model=BookResponse, status_code=201)
 async def create_book(
     book_in: BookCreate,           
     session: AsyncSession = Depends(get_db) 
 ):
     return await BookService.create_book(session, book_in)
-    
-
 
 @router.get("/",response_model=list[BookResponse])
 async def get_books(
@@ -25,7 +23,6 @@ async def get_books(
     session: AsyncSession = Depends(get_db)
 ):
     return await BookService.get_all(session,title) 
-
 
 
 @router.get("/{book_id}",response_model=BookResponse)
@@ -44,7 +41,7 @@ async def update_book(
 ):  
     return await BookService.update_book(session,book_id,book_in)
 
-@router.delete("/{book_id}",response_model=BookResponse)
+@router.delete("/{book_id}", status_code=204)
 async def delete_book(
         book_id: int,
         session: AsyncSession = Depends(get_db)
