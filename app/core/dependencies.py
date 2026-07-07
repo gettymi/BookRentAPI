@@ -7,7 +7,6 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.services.user_services import UserService
 
-# Цей об'єкт шукає токен у заголовку Authorization (Bearer <token>)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 async def get_current_user(
@@ -34,17 +33,3 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
-
-    
-    # КРОК 1: Спробуй розкодувати токен за допомогою jwt.decode()
-    # (Використовуй settings.SECRET_KEY та settings.ALGORITHM)
-    # Згорни це у блок try...except JWTError: щоб зловити невалідні токени.
-    
-    # КРОК 2: Дістань email (ключ 'sub') з розкодованого словника (payload).
-    # Якщо email відсутній, викидай credentials_exception.
-    
-    # КРОК 3: Знайди користувача в базі за цим email через UserService.
-    # Якщо користувача немає, викидай credentials_exception.
-    
-    # КРОК 4: Поверни об'єкт користувача.
-    
