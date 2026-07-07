@@ -61,14 +61,17 @@ class UserService:
     
     @staticmethod
     async def authenticate_user(session: AsyncSession, email: str, password: str):
-        query = select(User).where(User.email == email)
-        result = await session.execute(query)
-        user = result.scalar_one_or_none()
-
+        user = await UserService.find_user(session,email)
         if not user or not verify_password(plain_password=password, hashed_password=user.hashed_password):
             return None
 
         return user
+    
+    @staticmethod
+    async def find_user(session: AsyncSession, email: str):
+        query = select(User).where(User.email == email)
+        result = await session.execute(query)
+        return result.scalar_one_or_none()
 
 
     
