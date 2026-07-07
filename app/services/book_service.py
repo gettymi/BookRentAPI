@@ -1,33 +1,28 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.book import BookCreate, BookUpdate
+from app.models.book import Book
+from app.repositories.book_repository import BookRepository
+from app.core.exceptions import BookNotFoundError
+
 class BookService:
      @staticmethod
      async def get_all(session: AsyncSession, title: str | None = None):
-        query = select(Book)
-        if title:
-            query = query.where(Book.title.ilike(f"%{title}%"))
-        
-        result = await session.execute(query)
-        return result.scalars().all()
+      repo = BookRepository(session)
+      return await repo.get_all(title=title)
      
      @staticmethod
      async def get_book_by_id(session: AsyncSession, book_id: int):
-        query = select(Book).where(Book.id == book_id)
-        result = await session.execute(query)
-        book = result.scalar_one_or_none()
-        if book:
-            return book
-        else:
-            raise HTTPException(status_code=404, detail="Book not found")
-        
+      repo = BookRepository(session)
+      result = await repo.get_by_id(book_id)
+      if not result:
+         raise BookNotFoundError
+      return result
 
      @staticmethod   
      async def create_book(session: AsyncSession, book_in: BookCreate):
         new_book = Book(**book_in.model_dump())
-        session.add(new_book)
-        await session.commit()
-        await session.refresh(new_book)
-        return new_book
+        repo = BookRepository(session)
+        return await repo.create(new_book)
 
      @staticmethod
      async def update_book(session: AsyncSession, book_id: int, book_in: BookUpdate):
@@ -35,13 +30,12 @@ class BookService:
         updated_data = book_in.model_dump(exclude_unset=True) 
         for key, value in updated_data.items():
             setattr(book, key, value)
-        await session.commit()
-        await session.refresh(book)
-        return book
-     
+        repo = BookRepository(session)
+        return await repo.update(book)
+
      @staticmethod
      async def delete_book(session: AsyncSession, book_id: int):
         book = await BookService.get_book_by_id(session, book_id)
-        await session.delete(book)
-        await session.commit()
-        return book
+        repo = BookRepository(session)
+        return await repo.delete(book)
+
