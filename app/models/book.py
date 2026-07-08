@@ -1,5 +1,5 @@
 from app.core.database import Base
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String
 
 class Book(Base):
@@ -11,4 +11,4 @@ class Book(Base):
     price: Mapped[float] = mapped_column()
     description: Mapped[str | None] = mapped_column(String(1000))
     is_available: Mapped[bool] = mapped_column(default=True)
-
+    rentals: Mapped[list["Rental"]] = relationship(back_populates="book")

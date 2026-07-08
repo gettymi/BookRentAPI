@@ -1,5 +1,5 @@
-from app.core.database import Base
-from sqlalchemy.orm import Mapped, mapped_column
+from app.core.database import Base  
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String
 
 
@@ -10,3 +10,4 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(default=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)
+    rentals: Mapped[list["Rental"]] = relationship(back_populates="user")

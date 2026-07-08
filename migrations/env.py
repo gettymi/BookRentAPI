@@ -16,15 +16,14 @@ sys.path.insert(0,project_root)
 
 from app.core.config import settings
 from app.core.database import Base
-from app.models import Book, User
+from app.models import Book, User, Rental
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
