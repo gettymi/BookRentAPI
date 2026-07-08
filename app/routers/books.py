@@ -3,19 +3,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.schemas.book import BookCreate, BookResponse,BookUpdate
+from app.schemas.user import UserResponse
+from app.models.user import User
 from app.models.book import Book
 from app.core.database import get_db
 from app.services.book_service import BookService
+from app.core.dependencies import get_current_admin_user
 
 router = APIRouter()
 
-
-@router.post("/", response_model=BookResponse, status_code=201)
-async def create_book(
-    book_in: BookCreate,           
-    session: AsyncSession = Depends(get_db) 
-):
-    return await BookService.create_book(session, book_in)
 
 @router.get("/",response_model=list[BookResponse])
 async def get_books(
@@ -23,6 +19,15 @@ async def get_books(
     session: AsyncSession = Depends(get_db)
 ):
     return await BookService.get_all(session,title) 
+
+@router.post("/", response_model=BookResponse, status_code=201)
+async def create_book(
+    book_in: BookCreate,           
+    session: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+):
+    print(f"Book created by user: {current_user.email}")
+    return await BookService.create_book(session, book_in)
 
 
 @router.get("/{book_id}",response_model=BookResponse)
@@ -37,14 +42,16 @@ async def get_book_by_id(
 async def update_book(
         book_id: int,
         book_in: BookUpdate,
-        session: AsyncSession = Depends(get_db)
+        session: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_admin_user)
 ):  
     return await BookService.update_book(session,book_id,book_in)
 
 @router.delete("/{book_id}", status_code=204)
 async def delete_book(
         book_id: int,
-        session: AsyncSession = Depends(get_db)
+        session: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_admin_user)
 ):  
     return await BookService.delete_book(session,book_id)
     
