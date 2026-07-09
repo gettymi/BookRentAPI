@@ -1,7 +1,6 @@
 from fastapi import HTTPException, status
 
 
-
 # ==========================================
 # 1. Web Layer Exceptions 
 # ==========================================
@@ -24,7 +23,31 @@ class PermissionDeniedException(HTTPException):
 # 2. Service Layer Exceptions 
 # ==========================================
 
-class BookNotFoundError(Exception):
+class BookNotFoundException(Exception):
     def __init__(self, message="The requested book was not found in the database."):
         self.message = message
         super().__init__(self.message)
+
+class BookNotAvailableException(Exception):
+    def __init__(self):
+        super().__init__("This book is currently rented out.")
+
+class TooLongRentalDaysException(Exception):
+    def __init__(self, message="The number of rental's days are too big, max 365 days"):
+        self.message = message
+        super().__init__(self.message)
+
+class UserHasOverdueBooksException(Exception):
+    def __init__(self, message="Please return your books to booked previously"):
+        self.message=message
+        super().__init__(self.message)
+
+class RentalNotFoundException(Exception):
+    def __init__(self, message="We were not able find your rental"):
+        self.message = message
+        super().__init__(self.message)
+    
+class BookAlreadyReturnedException(Exception):
+        def __init__(self, message="Book is already returned"):
+            self.message = message
+            super().__init__(self.message)

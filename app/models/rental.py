@@ -15,3 +15,4 @@ class Rental(Base):
     due_date: Mapped[datetime] = mapped_column()
     returned_at: Mapped[datetime | None ] = mapped_column(default = None)
     status: Mapped[str] = mapped_column(String, default="active")
+    total_price: Mapped[float] = mapped_column()
