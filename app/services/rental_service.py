@@ -4,12 +4,15 @@ from sqlalchemy import select, func
 from app.models import User, Rental, Book
 from app.services.book_service import BookService
 from datetime import datetime, timedelta, timezone
-from app.core.exceptions import BookNotAvailableException, TooLongRentalDaysException, UserHasOverdueBooksException, RentalNotFoundException, PermissionDeniedException, BookAlreadyReturnedException, MaxRentalsReachedException
+from app.core.exceptions import BookNotAvailableException, TooLongRentalDaysException, UserHasOverdueBooksException, RentalNotFoundException, PermissionDeniedException, BookAlreadyReturnedException, MaxRentalsReachedException, InvalidRentalDurationException
 
 class RentalService:
 
     @staticmethod
     async def rent_book(session: AsyncSession, book_id: int, rental_days : int, current_user: User):
+        if rental_days <= 0 or rental_days > 90: 
+            raise InvalidRentalDurationException()
+
         book = await BookService.get_book_by_id(session, book_id, lock_for_update=True) 
 
         if not book.is_available:
