@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.services.user_services import UserService
 from app.schemas.user import UserResponse
 from app.core.exceptions import CredentialsException, PermissionDeniedException
+from app.models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -32,7 +33,7 @@ async def get_current_user(
         raise credentials_exception
 
 async def get_current_admin_user(
-    user: UserResponse = Depends(get_current_user)
+    user: User = Depends(get_current_user)
 ):
     if user.is_superuser:
         return user 
