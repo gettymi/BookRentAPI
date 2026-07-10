@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.book import BookCreate, BookUpdate
 from app.models.book import Book
 from app.repositories.book_repository import BookRepository
-from app.core.exceptions import BookNotFoundError
+from app.core.exceptions import BookNotFoundException
 
 class BookService:
      @staticmethod
@@ -11,11 +11,11 @@ class BookService:
       return await repo.get_all(title=title)
      
      @staticmethod
-     async def get_book_by_id(session: AsyncSession, book_id: int):
+     async def get_book_by_id(session: AsyncSession, book_id: int, lock_for_update: bool = False):
       repo = BookRepository(session)
-      result = await repo.get_by_id(book_id)
+      result = await repo.get_by_id(book_id, lock_for_update)
       if not result:
-         raise BookNotFoundError
+         raise BookNotFoundException()
       return result
 
      @staticmethod   

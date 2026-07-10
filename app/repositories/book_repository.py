@@ -14,8 +14,11 @@ class BookRepository:
         result = await self.session.execute(query) 
         return result.scalars().all()
 
-    async def get_by_id(self, book_id: int):
-        query = select(Book).where(Book.id == book_id)
+    async def get_by_id(self, book_id: int, lock_for_update: bool = False):
+        if not lock_for_update:
+            query = select(Book).where(Book.id == book_id)
+        else:
+            query = select(Book).where(Book.id == book_id).with_for_update()
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
