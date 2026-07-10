@@ -51,3 +51,8 @@ class BookAlreadyReturnedException(Exception):
         def __init__(self, message="Book is already returned"):
             self.message = message
             super().__init__(self.message)
+
+class MaxRentalsReachedException(Exception):
+        def __init__(self, message="Maximum number of books were rented"):
+            self.message = message
+            super().__init__(self.message)
