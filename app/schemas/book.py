@@ -26,3 +26,11 @@ class BookUpdate(BaseModel):
     year:int | None = None
     description:str | None = None
     is_available:bool | None = None
+
+class BookCatalogResponse(BaseModel):
+    title: int
+    author: str
+    year: int
+    price: float
+    book_id: int
+    available_count: int 

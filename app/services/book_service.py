@@ -6,9 +6,17 @@ from app.core.exceptions import BookNotFoundException
 
 class BookService:
      @staticmethod
-     async def get_all(session: AsyncSession, title: str | None = None):
+     async def get_all(session: AsyncSession,
+      page: int,
+      size: int,
+      title: str | None = None,
+      author: str | None = None,
+      year: int | None = None,
+      price_range: list[int] | None = None
+      ):
+      
       repo = BookRepository(session)
-      return await repo.get_all(title=title)
+      return await repo.get_all(title=title,page=page,size=size,title=title,author=author,year=year,price_range=price_range)
      
      @staticmethod
      async def get_book_by_id(session: AsyncSession, book_id: int, lock_for_update: bool = False):

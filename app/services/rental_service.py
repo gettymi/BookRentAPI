@@ -112,7 +112,9 @@ class RentalService:
             raise e 
 
     @staticmethod
-    async def get_user_rentals(session: AsyncSession, user_id:int):
+    async def get_user_rentals(session: AsyncSession, user_id:int, current_user:User):
+        if current_user.id != user_id and not current_user.is_superuser:
+            raise PermissionDeniedException()
         query = select(Rental).where(Rental.user_id==user_id)
         result = await session.execute(query)
         user_rentals = result.scalars().all()

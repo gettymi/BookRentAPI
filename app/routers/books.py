@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.schemas.book import BookCreate, BookResponse,BookUpdate
+from app.schemas.book import BookCreate, BookResponse,BookUpdate, BookCatalogResponse
 from app.schemas.user import UserResponse
+from app.schemas.pagination import PaginatedResponse
 from app.models.user import User
 from app.models.book import Book
 from app.core.database import get_db
@@ -13,12 +14,17 @@ from app.core.dependencies import get_current_admin_user
 router = APIRouter()
 
 
-@router.get("/",response_model=list[BookResponse])
+@router.get("/",response_model=PaginatedResponse[BookCatalogResponse])
 async def get_books(
+    page: int = 1,
+    size: int = 50,
     title: str | None = None,
+    author: str | None = None,
+    year: int | None = None,
+    price_range: list[int] | None = Query(default=None),
     session: AsyncSession = Depends(get_db)
 ):
-    return await BookService.get_all(session,title) 
+    return await BookService.get_all(session=session,page=page,size=size,title=title,author=author,year=year,price_range=price_range) 
 
 @router.post("/", response_model=BookResponse, status_code=201)
 async def create_book(
