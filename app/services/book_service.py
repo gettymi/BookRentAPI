@@ -16,7 +16,7 @@ class BookService:
       ):
       
       repo = BookRepository(session)
-      return await repo.get_all(title=title,page=page,size=size,title=title,author=author,year=year,price_range=price_range)
+      return await repo.get_all(title=title,page=page,size=size,author=author,year=year,price_range=price_range)
      
      @staticmethod
      async def get_book_by_id(session: AsyncSession, book_id: int, lock_for_update: bool = False):

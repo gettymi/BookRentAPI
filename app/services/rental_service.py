@@ -1,4 +1,4 @@
-from sqlalchemy.ext.asyncio import AsyncSession, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.dependencies import get_current_user
 from sqlalchemy import select, func
 from app.models import User, Rental, Book
@@ -21,7 +21,7 @@ class RentalService:
         overdue_queries = select(Rental).where(
             Rental.user_id == current_user.id,
             Rental.returned_at.is_(None),
-            Rental.due_date < datetime.now(timezone.utc)
+            Rental.due_date < datetime.now(timezone.utc).replace(tzinfo=None)
         )
 
         result = await session.execute(overdue_queries)
@@ -43,7 +43,7 @@ class RentalService:
             raise MaxRentalsReachedException()
 
 
-        due_date = datetime.now(timezone.utc) + timedelta(days=rental_days)
+        due_date = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=rental_days)
         total_price =  RentalService.calculate_rental_cost(rental_days)
         new_rent = Rental(user_id = current_user.id, book_id = book_id, due_date = due_date, total_price = total_price)
         session.add(new_rent)
@@ -92,7 +92,7 @@ class RentalService:
         if rental.returned_at:
             raise BookAlreadyReturnedException()
 
-        rental.returned_at = datetime.now(timezone.utc)
+        rental.returned_at = datetime.now(timezone.utc).replace(tzinfo=None)
 
         if rental.returned_at > rental.due_date:
             rental.total_price += min(2 * float(((rental.returned_at - rental.due_date).total_seconds()))/86_400,100)
@@ -101,6 +101,7 @@ class RentalService:
         book = await BookService.get_book_by_id(session,rental.book_id)
 
         book.is_available = True 
+        rental.status = "returned"
 
 
         try:
@@ -112,13 +113,52 @@ class RentalService:
             raise e 
 
     @staticmethod
-    async def get_user_rentals(session: AsyncSession, user_id:int, current_user:User):
+    async def get_user_rentals(
+        session: AsyncSession, 
+        user_id:int, 
+        current_user:User,
+        size:int,
+        page:int, 
+        status:str | None = None,
+        end_date: datetime | None = None,
+        start_date: datetime | None = None,
+    ):
+
         if current_user.id != user_id and not current_user.is_superuser:
             raise PermissionDeniedException()
         query = select(Rental).where(Rental.user_id==user_id)
-        result = await session.execute(query)
-        user_rentals = result.scalars().all()
-        return user_rentals
+        total_query = select(func.count(Rental.id)).where(Rental.user_id==user_id)
+
+        if status:
+            query = query.where(Rental.status == status)
+            total_query = total_query.where(Rental.status == status)
+        if start_date:
+            query = query.where(Rental.start_date >= start_date)
+            total_query = total_query.where(Rental.start_date >= start_date)
+        if end_date:
+            query = query.where(Rental.end_date <= end_date)
+            total_query = total_query.where(Rental.end_date <= end_date)
+
+        
+
+        query = query.offset((page - 1) * size).limit(size)
+
+
+        try:
+
+            result = await session.execute(query)
+            total_result = await session.execute(total_query)
+            user_rentals = result.scalars().all()
+            total = total_result.scalar_one()
+
+        except Exception as e:
+
+            await session.rollback()
+            raise e
+
+
+
+        return {"items":user_rentals, "page":page, "size":size, "total": total}
 
     @staticmethod
     async def get_overdue_rentals(session: AsyncSession):

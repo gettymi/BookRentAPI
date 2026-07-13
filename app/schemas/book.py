@@ -28,7 +28,7 @@ class BookUpdate(BaseModel):
     is_available:bool | None = None
 
 class BookCatalogResponse(BaseModel):
-    title: int
+    title: str
     author: str
     year: int
     price: float
