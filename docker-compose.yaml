@@ -23,5 +23,14 @@ services:
       - .:/app 
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload 
 
+  redis:
+    image: redis:7.4-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
 volumes:
   pgdata:
+  redis_data:

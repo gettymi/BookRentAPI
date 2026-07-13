@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
+    REDIS_URL: str
+
     SECRET_KEY: str
     ALGORITHM: str 
     ACCESS_TOKEN_EXPIRE_MINUTES: int

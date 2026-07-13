@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from redis.asyncio import Redis
+from fastapi.encoders import jsonable_encoder
+import json
 
 from app.schemas.book import BookCreate, BookResponse,BookUpdate, BookCatalogResponse
 from app.schemas.user import UserResponse
@@ -10,6 +13,7 @@ from app.models.book import Book
 from app.core.database import get_db
 from app.services.book_service import BookService
 from app.core.dependencies import get_current_admin_user
+from app.core.redis import get_redis
 
 router = APIRouter()
 
@@ -22,19 +26,32 @@ async def get_books(
     author: str | None = None,
     year: int | None = None,
     price_range: list[int] | None = Query(default=None),
-    session: AsyncSession = Depends(get_db)
+    session: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis)
 ):
-    return await BookService.get_all(session=session,page=page,size=size,title=title,author=author,year=year,price_range=price_range) 
+    cache_key = f"books:page={page}:size={size}:title={title}:author={author}:year={year}:price={str(price_range)}"
+    cached_query = await redis.get(cache_key)
+    if cached_query:
+        return json.loads(cached_query)
+
+    db_result = await BookService.get_all(session=session,page=page,size=size,title=title,author=author,year=year,price_range=price_range) 
+    await redis.setex(cache_key,60, json.dumps(jsonable_encoder(db_result)))
+    return db_result
 
 @router.post("/", response_model=BookResponse, status_code=201)
 async def create_book(
     book_in: BookCreate,           
     session: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_admin_user),
+    redis: Redis = Depends(get_redis)
 ):
-    print(f"Book created by user: {current_user.email}")
-    return await BookService.create_book(session, book_in)
+    new_book = await BookService.create_book(session, book_in)
 
+    redis_keys = await redis.keys("books:*")
+    if redis_keys:
+        await redis.delete(*redis_keys)
+
+    return new_book
 
 @router.get("/{book_id}",response_model=BookResponse)
 async def get_book_by_id(
@@ -49,17 +66,28 @@ async def update_book(
         book_id: int,
         book_in: BookUpdate,
         session: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_admin_user)
+        current_user: User = Depends(get_current_admin_user),
+        redis: Redis = Depends(get_redis)
 ):  
-    return await BookService.update_book(session,book_id,book_in)
+    updated_book = await BookService.update_book(session,book_id,book_in)
+
+    redis_keys = await redis.keys("books:*")
+    if redis_keys:
+        await redis.delete(*redis_keys)
+
+    return updated_book
 
 @router.delete("/{book_id}", status_code=204)
 async def delete_book(
         book_id: int,
         session: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_admin_user)
+        current_user: User = Depends(get_current_admin_user),
+        redis: Redis = Depends(get_redis)
 ):  
-    return await BookService.delete_book(session,book_id)
-    
+    deleted_book = await BookService.delete_book(session,book_id)
+    redis_keys = await redis.keys("books:*")    
+    if redis_keys:
+        await redis.delete(*redis_keys)
+    return None
  
     
