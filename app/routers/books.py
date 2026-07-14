@@ -35,7 +35,7 @@ async def get_books(
         return json.loads(cached_query)
 
     db_result = await BookService.get_all(session=session,page=page,size=size,title=title,author=author,year=year,price_range=price_range) 
-    await redis.setex(cache_key,60, json.dumps(jsonable_encoder(db_result)))
+    await redis.set(cache_key,json.dumps(jsonable_encoder(db_result)), ex=60)
     return db_result
 
 @router.post("/", response_model=BookResponse, status_code=201)
