@@ -133,11 +133,11 @@ class RentalService:
             query = query.where(Rental.status == status)
             total_query = total_query.where(Rental.status == status)
         if start_date:
-            query = query.where(Rental.start_date >= start_date)
-            total_query = total_query.where(Rental.start_date >= start_date)
+            query = query.where(Rental.rented_at >= start_date)
+            total_query = total_query.where(Rental.rented_at >= start_date)
         if end_date:
-            query = query.where(Rental.end_date <= end_date)
-            total_query = total_query.where(Rental.end_date <= end_date)
+            query = query.where(Rental.due_date <= end_date)
+            total_query = total_query.where(Rental.due_date <= end_date)
 
         
 
@@ -163,7 +163,7 @@ class RentalService:
     @staticmethod
     async def get_overdue_rentals(session: AsyncSession):
         query = select(Rental).where(
-            Rental.due_date < datetime.now(timezone.utc),
+            Rental.due_date < datetime.now(timezone.utc).replace(tzinfo=None),
             Rental.returned_at.is_(None)
         )
         result = await session.execute(query)

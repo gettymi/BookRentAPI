@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -11,7 +11,7 @@ from app.core.exceptions import PermissionDeniedException
 
 router = APIRouter()
 
-@router.post("/", response_model=UserResponse)
+@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user_in: UserCreate, session: AsyncSession = Depends(get_db)):
     return await UserService.create_user(session,user_in)
 

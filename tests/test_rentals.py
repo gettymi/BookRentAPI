@@ -9,10 +9,10 @@ from app.core.dependencies import get_current_user
 from app.main import app
 
 
-async def helper_create_user(setup_database: Any) -> User:
+async def helper_create_user(setup_database: Any,is_superuser:bool = True) -> User:
 
     hashed_password = get_password_hash("strongpas")
-    new_user = User(email="test@wp.pl", hashed_password=hashed_password, is_superuser=True)
+    new_user = User(email="test@wp.pl", hashed_password=hashed_password, is_superuser=is_superuser)
     
     async with TestingSessionLocal() as session:
         session.add(new_user)
@@ -136,6 +136,7 @@ async def test_invalid_rental_duration(async_client: AsyncClient, setup_database
     response = await async_client.post("/rentals/",params=params)
 
     assert response.status_code == 400
+    
 
     app.dependency_overrides.pop(get_current_user, None)
 
@@ -165,5 +166,36 @@ async def test_return_book_flow(async_client: AsyncClient, setup_database: Any) 
     assert refreshed_book.is_available == True
 
     assert ret_response.json()["returned_at"]
+
+    app.dependency_overrides.pop(get_current_user, None)
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_get_user_rentals(async_client: AsyncClient, setup_database: Any) -> None:
+
+    await helper_create_user(setup_database=setup_database)
+
+    params = {
+        "start_date":"2026-01-01", 
+        "status":"active",
+        "end_date":"2026-12-31",
+        "size":5,
+        "page":1,
+    }
+
+    response = await async_client.get("/rentals/me",params=params)
+
+    assert response.status_code == 200
+
+    app.dependency_overrides.pop(get_current_user, None)
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_get_overdue_rentals(async_client: AsyncClient, setup_database: Any) -> None:
+
+    await helper_create_user(setup_database=setup_database)
+
+    response = await async_client.get("/rentals/overdue")
+
+    assert response.status_code == 200
 
     app.dependency_overrides.pop(get_current_user, None)

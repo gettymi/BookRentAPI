@@ -1,6 +1,3 @@
-
----
-
 # BookRent API 📚
 
 A high-performance, asynchronous REST API for managing a book catalog and user rentals. Built with modern Python backend standards, featuring a layered architecture, advanced caching, and secure authentication.
@@ -80,6 +77,21 @@ Copy `.env.example` to `.env` and configure the following:
 
 ---
 
+## 🧪 Testing
+
+This project maintains **90%+ test coverage** across all critical business logic, routers, and database interactions using `pytest` and a dedicated, containerized PostgreSQL test database.
+
+![Test Coverage Report](assets/coverage-report.png)
+
+To run the test suite and generate a coverage report inside the Docker container:
+
+```bash
+docker compose exec api pytest --cov=app --cov-report=term-missing
+
+```
+
+---
+
 ## 🧹 Shutdown & Cleanup
 
 To stop the containers:
@@ -95,5 +107,3 @@ To stop the containers **and wipe all data** (Postgres and Redis volumes):
 docker compose down -v
 
 ```
-
----
