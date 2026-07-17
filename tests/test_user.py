@@ -12,7 +12,7 @@ async def test_create_user(async_client: AsyncClient) -> None:
 
     user_in = {
         "email":"testuser@ex.com",
-        "password":"qwerty12345",
+        "password":"qwerty12345W",
     }
 
     response = await async_client.post("/users/",json=user_in)
@@ -43,7 +43,7 @@ async def test_update_user(async_client: AsyncClient, setup_database:Any) -> Non
 
     data = {
         "email":"newmail@to.com",
-        "password":"123456789"
+        "password":"123456789WDQ"
     }
 
     response = await async_client.patch(f"/users/{new_user.id}",json=data)
