@@ -1,4 +1,3 @@
-```markdown
 # BookRent API 📚
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
@@ -130,6 +129,3 @@ To stop the containers **and wipe all data** (Postgres and Redis volumes):
 docker-compose down -v
 
 ```
-
-```
-
