@@ -1,6 +1,9 @@
 from pydantic_settings import BaseSettings,SettingsConfigDict
+from typing import Literal
 
 class Settings(BaseSettings):
+
+    ENVIRONMENT: Literal["dev", "staging", "prod"] = "dev"
 
     DB_HOST: str
     DB_PORT: str
