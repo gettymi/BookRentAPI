@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
@@ -13,7 +13,19 @@ from app.models.user import User
 router = APIRouter()
 
 @router.post('/',response_model=RentalResponse)
-async def rent_book(book_id: int, rental_days: int, session:AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def rent_book(
+    book_id: int = Query(..., description="The ID of the book to rent", example=1),
+    rental_days: int = Query(gt=0, le=90, description="The ID of the book to rent", example=14),
+    session:AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+    ):
+    """
+    Creates a new active rental for the current authenticated user.
+    
+    - **book_id**: The ID of the book to rent. Must be currently available.
+    - **rental_days**: How long you want to keep the book (max 60 days).
+    """
+    
     return await RentalService.rent_book(book_id=book_id,rental_days=rental_days,session=session,current_user=current_user)
 
 @router.post('/{rental_id}/return', response_model=RentalResponse)

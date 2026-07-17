@@ -9,7 +9,18 @@ class BookBase(BaseModel):
 
 
 class BookCreate(BookBase):
-    pass
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "title": "Clean Architecture",
+                "author": "Robert C. Martin",
+                "price": 34.99,
+                "year": 2017,
+                "description": "A Craftsman's Guide to Software Structure and Design."
+            }
+        }
+    )
 
 
 class BookResponse(BookBase):
